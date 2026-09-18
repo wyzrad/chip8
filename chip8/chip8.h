@@ -11,7 +11,7 @@ class Chip8
     std::array<uint16_t, 16> stack{};
 
     // program counter, address register
-    uint16_t pc{ 512 };
+    uint16_t pc{ ROM_START };
     uint16_t I{};
 
     // array of memory and array of registers
@@ -47,12 +47,14 @@ class Chip8
     };
 
     static constexpr uint16_t FONT_START{ 0x50 };
+    static constexpr uint16_t ROM_START{ 0x200 };
 
 public:
     Chip8();
-    void loadROM(const std::string& path);
+    bool loadROM(const std::string& path);
     void cycle();
     void debugDump() const;
+    void dumpMemory(uint16_t pos, int count) const;
 
 };
 
