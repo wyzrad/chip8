@@ -7,20 +7,22 @@
 
 class Chip8
 {
-    // memory, program counter
-    std::array<uint8_t, 4096> mem{};
-    uint16_t pc{ 512 };
+    // stack
+    std::array<uint16_t, 16> stack{};
 
-    // registers
-    std::array<uint8_t, 16> V{};
+    // program counter, address register
+    uint16_t pc{ 512 };
     uint16_t I{};
 
-    // sound timer, delay timer
+    // array of memory and array of registers
+    std::array<uint8_t, 4096> mem{};
+    std::array<uint8_t, 16> V{};
+
+    // sound timer and delay timer
     uint8_t st{};
     uint8_t dt{};
 
-    // stack and stack pointer
-    std::array<uint16_t, 16> stack{};
+    // stack pointer
     uint8_t sp{};
 
     std::array<bool, 2048> display{};
