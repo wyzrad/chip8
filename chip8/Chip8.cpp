@@ -48,6 +48,7 @@ void Chip8::dumpMemory(uint16_t pos, int count) const
 	{
 		std::cout << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(mem[pos + i]) << ' ';
 	}
+	std::cout << '\n';
 }
 
 void Chip8::debugDump() const
@@ -63,4 +64,44 @@ void Chip8::debugDump() const
 
 	std::cout << "st: " << static_cast<int>(st) << '\n';
 	std::cout << "dt:" << static_cast<int>(dt) << '\n';
+}
+
+void Chip8::cycle()
+{
+	uint16_t opcode{ static_cast<uint16_t>((mem[pc] * 256) + mem[pc + 1]) };
+	uint8_t firstNibble{ static_cast<uint8_t>(opcode / 4096) };
+
+	pc += 2;
+
+	switch (firstNibble)
+	{
+	case 0:
+		switch (opcode)
+		{
+		case 0x00E0:
+			// clear screen
+			for (bool& pixel : display) pixel = false; break;
+		case 0x00EE:
+			// return from subroutine
+			// set pc to top value of stack, pop value from stack, decrement stack pointer
+
+			if (sp == 0)
+			{
+				std::cout << "Warning: return from subroutine (stack pop) while stack pointer is at 0.\n";
+				break;
+			}
+
+			pc = stack[sp - 1];
+			sp--;
+			break;
+		default:
+			// either unknown opcode or call machine-code routine opcode, unimplemented
+			std::cout << "Unknown operation: " << std::hex << opcode << std::dec << '\n';
+			break;
+		}
+		break;
+	default:
+		std::cout << "Unknown operation: " << std::hex << opcode << std::dec << '\n';
+		break;
+	}
 }

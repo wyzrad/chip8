@@ -20,5 +20,14 @@ int main()
     }
 
     chip8.dumpMemory(0x200, 16);
+
+    // chip8::cycle test loop below
+    // TODO: remove
+
+    for (int i{ 0 }; i < 20; i++)
+    {
+        chip8.cycle();
+    }
+
     std::cin.get();
 }
