@@ -100,6 +100,18 @@ void Chip8::cycle()
 			break;
 		}
 		break;
+	case 1:
+		pc = opcode % 4096;
+		break;
+	case 6:
+		V[(opcode / 256) % 16] = opcode % 256;
+		break;
+	case 7:
+		V[(opcode / 256) % 16] += opcode % 256;
+		break;
+	case 0xA:
+		I = opcode % 4096;
+		break;
 	default:
 		std::cout << "Unknown operation: " << std::hex << opcode << std::dec << '\n';
 		break;
