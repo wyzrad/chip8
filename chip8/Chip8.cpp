@@ -101,15 +101,19 @@ void Chip8::cycle()
 		}
 		break;
 	case 1:
+		// jump, set program counter
 		pc = opcode % 4096;
 		break;
 	case 6:
+		// set register V[second hex digit] to last two hex digits
 		V[(opcode / 256) % 16] = opcode % 256;
 		break;
 	case 7:
+		// add constant value (last two hex digits) to value already in V[second hex digit]
 		V[(opcode / 256) % 16] += opcode % 256;
 		break;
 	case 0xA:
+		// set address register
 		I = opcode % 4096;
 		break;
 	default:
