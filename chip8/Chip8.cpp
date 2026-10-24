@@ -116,6 +116,45 @@ void Chip8::cycle()
 		// set address register
 		I = opcode % 4096;
 		break;
+	case 0xD:
+	{
+		// draw sprite to x y coordinate
+		uint8_t	x{ V[(opcode / 256) % 16] };
+		x = x % 64;
+		uint8_t y{ V[(opcode / 16) % 16] };
+		y = y % 32;
+
+		// set special register used for flags to 0
+		V[0xF] = 0;
+
+		// N many rows, always 8 columns (8 bits)
+		for (int row{ 0 }; row <= (opcode % 16) - 1; row++)
+		{
+			int py{ y + row };
+			uint8_t placeValue{ 128 };
+
+			for (int col{ 0 }; col <= 7; col++)
+			{
+				int px{ x + col };
+
+				// extract the current bit from the byte at the memory index
+				int bit{ (mem[I + row] / placeValue) % 2 };
+				placeValue /= 2;
+
+				// if off-screen
+				if (px >= 64 || py >= 32)
+					continue;
+
+				// if a collission happened, bit at location on and draw sprite bit also on
+				if (bit && display[(py) * 64 + (px)])
+					V[0xF] = 1;
+
+				display[(py) * 64 + (px)] ^= bit;
+			}
+		}
+
+		break;
+	}
 	default:
 		std::cout << "Unknown operation: " << std::hex << opcode << std::dec << '\n';
 		break;
