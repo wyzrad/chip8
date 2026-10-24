@@ -55,6 +55,7 @@ public:
     void cycle();
     void debugDump() const;
     void dumpMemory(uint16_t pos, int count) const;
+    void renderDisplay() const;
 
 };
 

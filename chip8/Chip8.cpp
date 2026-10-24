@@ -66,6 +66,24 @@ void Chip8::debugDump() const
 	std::cout << "dt:" << static_cast<int>(dt) << '\n';
 }
 
+void Chip8::renderDisplay() const
+{
+	std::cout << "\033[2J\033[H";
+
+	for (int row{ 0 }; row < 32; row++)
+	{
+		for (int col{ 0 }; col < 64; col++)
+		{
+			if (display[(row * 64) + col])
+				std::cout << "##";
+			else
+				std::cout << "  ";
+		}
+
+		std::cout << '\n';
+	}
+}
+
 void Chip8::cycle()
 {
 	uint16_t opcode{ static_cast<uint16_t>((mem[pc] * 256) + mem[pc + 1]) };

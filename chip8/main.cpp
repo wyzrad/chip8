@@ -29,6 +29,7 @@ int main()
         chip8.cycle();
     }
 
+    chip8.renderDisplay();
     chip8.debugDump();
 
     std::cin.get();
