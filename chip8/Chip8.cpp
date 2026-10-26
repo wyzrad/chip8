@@ -122,6 +122,47 @@ void Chip8::cycle()
 		// jump, set program counter
 		pc = opcode % 4096;
 		break;
+	case 2:
+		// call a subroutine
+
+		// save current pc onto stack, warn if full
+		if (sp == 16)
+		{
+			std::cout << "Stack is full! Tried to add current program counter to stack while stack was full at " << std::hex << pc - 2 << std::dec << '\n';
+			break;
+		}
+
+		stack[sp] = pc;
+		sp++;
+
+		// jump to NNN (last three hex digits)
+		pc = opcode % 4096;
+		break;
+	case 3:
+		// skip if V[second digit] equals last two digits
+		if (V[(opcode % 4096) / 256] == opcode % 256)
+			pc += 2;
+
+		break;
+	case 4:
+		// skip if V[second digit] does not equal last two digits
+		if (V[(opcode % 4096) / 256] != opcode % 256)
+			pc += 2;
+
+		break;
+	case 5:
+		// if last digit isn't 0, not a valid instruction
+		if (opcode % 16 != 0)
+		{
+			std::cout << "Invalid instruction at " << std::hex << pc - 2 << std::dec << '\n';
+			break;
+		}
+
+		// skip if register V[second digit] == V[third digit]
+		if (V[(opcode % 4096) / 256] == V[(opcode % 256) / 16])
+			pc += 2;
+
+		break;
 	case 6:
 		// set register V[second hex digit] to last two hex digits
 		V[(opcode / 256) % 16] = opcode % 256;
@@ -129,6 +170,18 @@ void Chip8::cycle()
 	case 7:
 		// add constant value (last two hex digits) to value already in V[second hex digit]
 		V[(opcode / 256) % 16] += opcode % 256;
+		break;
+	case 9:
+		// if last digit isn't 0, not a valid instruction
+		if (opcode % 16 != 0)
+		{
+			std::cout << "Invalid instruction at " << std::hex << pc - 2 << std::dec << '\n';
+			break;
+		}
+		// skip if V[second digit] does not equal V[third digit]
+		if (V[(opcode % 4096) / 256] != V[(opcode % 256) / 16])
+			pc += 2;
+
 		break;
 	case 0xA:
 		// set address register
@@ -163,7 +216,7 @@ void Chip8::cycle()
 				if (px >= 64 || py >= 32)
 					continue;
 
-				// if a collission happened, bit at location on and draw sprite bit also on
+				// if a collission happened; bit at location on and draw sprite bit also on
 				if (bit && display[(py) * 64 + (px)])
 					V[0xF] = 1;
 
