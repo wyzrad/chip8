@@ -171,6 +171,72 @@ void Chip8::cycle()
 		// add constant value (last two hex digits) to value already in V[second hex digit]
 		V[(opcode / 256) % 16] += opcode % 256;
 		break;
+	case 8:
+		// arithmetic
+	{
+		uint8_t lastNibble{ static_cast<uint8_t>(opcode % 16) };
+		uint8_t X{ static_cast<uint8_t>((opcode % 4096) / 256) };
+		uint8_t Y{ static_cast<uint8_t>((opcode % 256) / 16) };
+		uint8_t flag{ 0 };
+
+		switch (lastNibble)
+		{
+		case 0:
+			V[X] = V[Y];
+			break;
+		case 1:
+			V[X] = V[X] | V[Y];
+			break;
+		case 2:
+			V[X] = V[X] & V[Y];
+			break;
+		case 3:
+			V[X] = V[X] ^ V[Y];
+			break;
+		case 4:
+			// set special flag if addition wrapped over 255
+			if (V[X] + V[Y] > 255)
+				flag = 1;
+
+			V[X] = V[X] + V[Y];
+			V[0xF] = flag;
+			break;
+		case 5:
+			// set special flag if number being subtracted FROM is bigger than the number being subtraced
+			if (V[X] >= V[Y])
+				flag = 1;
+
+			V[X] = V[X] - V[Y];
+			V[0xF] = flag;
+			break;
+		case 6:
+			// shift right, put bit that fell off into V[0xF]
+			flag = V[X] % 2;
+
+			V[X] = V[X] / 2;
+			V[0xF] = flag;
+			break;
+		case 7:
+			// same as case 5, reversed
+			if (V[Y] >= V[X])
+				flag = 1;
+
+			V[X] = V[Y] - V[X];
+			V[0xF] = flag;
+			break;
+		case 0xE:
+			// shift bits left, set leftmost bit (the wrapped one) to V[0xF]
+			flag = (V[X] / 128) % 2;
+			
+			V[X] *= 2;
+			V[0xF] = flag;
+			break;
+		default:
+			std::cout << "Unknown opcode at " << std::hex << pc - 2 << std::dec << '\n';
+			break;
+		}
+	}
+	break;
 	case 9:
 		// if last digit isn't 0, not a valid instruction
 		if (opcode % 16 != 0)
