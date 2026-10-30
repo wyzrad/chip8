@@ -88,6 +88,11 @@ void Chip8::cycle()
 {
 	uint16_t opcode{ static_cast<uint16_t>((mem[pc] * 256) + mem[pc + 1]) };
 	uint8_t firstNibble{ static_cast<uint8_t>(opcode / 4096) };
+	uint8_t X{ static_cast<uint8_t>((opcode % 4096) / 256) };
+	uint8_t Y{ static_cast<uint8_t>((opcode % 256) / 16) };
+	uint16_t NNN{ static_cast<uint16_t>(opcode % 4096) };
+	uint8_t NN{ static_cast<uint8_t>(opcode % 256) };
+	uint8_t N{ static_cast<uint8_t>(opcode % 16) };
 
 	pc += 2;
 
@@ -120,7 +125,7 @@ void Chip8::cycle()
 		break;
 	case 1:
 		// jump, set program counter
-		pc = opcode % 4096;
+		pc = NNN;
 		break;
 	case 2:
 		// call a subroutine
@@ -136,50 +141,47 @@ void Chip8::cycle()
 		sp++;
 
 		// jump to NNN (last three hex digits)
-		pc = opcode % 4096;
+		pc = NNN;
 		break;
 	case 3:
 		// skip if V[second digit] equals last two digits
-		if (V[(opcode % 4096) / 256] == opcode % 256)
+		if (V[X] == NN)
 			pc += 2;
 
 		break;
 	case 4:
 		// skip if V[second digit] does not equal last two digits
-		if (V[(opcode % 4096) / 256] != opcode % 256)
+		if (V[X] != NN)
 			pc += 2;
 
 		break;
 	case 5:
 		// if last digit isn't 0, not a valid instruction
-		if (opcode % 16 != 0)
+		if (N != 0)
 		{
 			std::cout << "Invalid instruction at " << std::hex << pc - 2 << std::dec << '\n';
 			break;
 		}
 
 		// skip if register V[second digit] == V[third digit]
-		if (V[(opcode % 4096) / 256] == V[(opcode % 256) / 16])
+		if (V[X] == V[Y])
 			pc += 2;
 
 		break;
 	case 6:
 		// set register V[second hex digit] to last two hex digits
-		V[(opcode / 256) % 16] = opcode % 256;
+		V[X] = NN;
 		break;
 	case 7:
 		// add constant value (last two hex digits) to value already in V[second hex digit]
-		V[(opcode / 256) % 16] += opcode % 256;
+		V[X] += NN;
 		break;
 	case 8:
 		// arithmetic
 	{
-		uint8_t lastNibble{ static_cast<uint8_t>(opcode % 16) };
-		uint8_t X{ static_cast<uint8_t>((opcode % 4096) / 256) };
-		uint8_t Y{ static_cast<uint8_t>((opcode % 256) / 16) };
 		uint8_t flag{ 0 };
 
-		switch (lastNibble)
+		switch (N)
 		{
 		case 0:
 			V[X] = V[Y];
@@ -239,26 +241,26 @@ void Chip8::cycle()
 	break;
 	case 9:
 		// if last digit isn't 0, not a valid instruction
-		if (opcode % 16 != 0)
+		if (N != 0)
 		{
 			std::cout << "Invalid instruction at " << std::hex << pc - 2 << std::dec << '\n';
 			break;
 		}
 		// skip if V[second digit] does not equal V[third digit]
-		if (V[(opcode % 4096) / 256] != V[(opcode % 256) / 16])
+		if (V[X] != V[Y])
 			pc += 2;
 
 		break;
 	case 0xA:
 		// set address register
-		I = opcode % 4096;
+		I = NNN;
 		break;
 	case 0xD:
 	{
 		// draw sprite to x y coordinate
-		uint8_t	x{ V[(opcode / 256) % 16] };
+		uint8_t	x{ V[X] };
 		x = x % 64;
-		uint8_t y{ V[(opcode / 16) % 16] };
+		uint8_t y{ V[Y] };
 		y = y % 32;
 
 		// set special register used for flags to 0
